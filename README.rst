@@ -20,6 +20,8 @@ debian/sid on x86_64 とlibusb-1.0.9~rc3-3 で動作確認しています。
 実行方法
 -------------------
 
+::
+
 $make 
 $ sudo ./powerusb
 init done
