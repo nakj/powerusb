@@ -59,10 +59,14 @@ void send_cmd(struct libusb_device_handle *devh,int cmd)
 int main(int argc, char **argv)
 {
   libusb_context *ctx = NULL;
+  libusb_device *dev;
+  libusb_device **devs;
   struct libusb_device_handle *devh = NULL;
   int r=1;
+  int i=0;
+  int cnt=0;
 
-
+  /* libusb initialize*/
   if ((r = libusb_init(&ctx)) < 0) {
     perror("libusb_init\n");
     exit(1);
@@ -70,12 +74,53 @@ int main(int argc, char **argv)
     libusb_set_debug(ctx,3);
     Dprintf("init done\n");
   }  
+  
+  /* confirm powerusb device*/
+  if((libusb_get_device_list(ctx,&devs)) < 0) {
+    perror("no usb device found");
+    exit(1);
+  }
+  while((dev =devs[i++]) != NULL) {
+    struct libusb_device_descriptor desc;
+    if (libusb_get_device_descriptor(dev,&desc) < 0) {
+      printf("failed to get device descriptor\n");
+      return 1;
+    }
 
+    if (desc.idVendor == USB_VENDOR_ID &&
+	desc.idProduct == USB_PRODUCT_ID) {
+      cnt++;
+      Dprintf("device found\n");
+    }
+  }
+  if (cnt == 0) {
+    fprintf(stderr,"device not connected\n");
+    exit(1);
+  }
+  if (cnt > 1) {
+    /* FIXME */
+    fprintf(stderr,"multi PowerUSB is not implemented yet\n");
+    exit(1);
+  }
+
+
+  /* open powerusb device */
   if ((devh = libusb_open_device_with_vid_pid(ctx,USB_VENDOR_ID,USB_PRODUCT_ID)) < 0 ) {
     perror("can't find PowerUSB device\n");
     goto out;
   } else {
     Dprintf("device opened\n");
+  }
+
+  /* detach kernel driver if attached. */
+  r = libusb_kernel_driver_active(devh,0);
+  //Dprintf("%d\n",r);
+  if (r == 1) {
+    r = libusb_detach_kernel_driver(devh,0);
+    if (r != 0) {
+      perror("detaching kernel driver failed");
+      exit(1);
+    }
   }
 
   send_cmd(devh,CMD_GET_MODEL);
