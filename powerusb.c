@@ -16,7 +16,7 @@
 #define CMD_GET_STATE2 0xa2
 #define CMD_GET_STATE3 0xac
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #define Dprintf printf
@@ -27,7 +27,7 @@
 
 void send_cmd(struct libusb_device_handle *devh,int cmd)
 {
-  int r,i;
+  int i;
   uint8_t buf[64],buf2[64];
   int size=0;
   Dprintf("send_cmd:%x\n",cmd);
@@ -37,12 +37,15 @@ void send_cmd(struct libusb_device_handle *devh,int cmd)
 
   buf[0] = cmd;
 
-  r = libusb_interrupt_transfer(devh,ENDPOINT_OUT,buf, sizeof(buf),&size, 1000);
-  if(r<0) {
+   
+  if((libusb_interrupt_transfer(devh,ENDPOINT_OUT,buf, sizeof(buf),&size, 1000)) < 0 ) {
     perror("libusb_interrupt_transfer");
     exit(1);
   }
-  r = libusb_interrupt_transfer(devh,ENDPOINT_IN,buf2, sizeof(buf2),&size, 1000);
+  if((libusb_interrupt_transfer(devh,ENDPOINT_IN,buf2, sizeof(buf2),&size, 1000)) < 0 ) {
+    perror("libusb_interrupt_transfer");
+    exit(1);
+  }
 
   Dprintf("send_cmd:read:");
   for(i=0;i<2;i++){
@@ -60,8 +63,7 @@ int main(int argc, char **argv)
   int r=1;
 
 
-  r = libusb_init(&ctx);
-  if (r < 0 ) {
+  if ((r = libusb_init(&ctx)) < 0) {
     perror("libusb_init\n");
     exit(1);
   } else {
@@ -69,12 +71,9 @@ int main(int argc, char **argv)
     Dprintf("init done\n");
   }  
 
-  devh = libusb_open_device_with_vid_pid(ctx,USB_VENDOR_ID,USB_PRODUCT_ID);
-  if (devh < 0 ) {
-    perror("libusb_open_device_with_vid_pid");
-    //printf("can't find PowerUSB device\n");
+  if ((devh = libusb_open_device_with_vid_pid(ctx,USB_VENDOR_ID,USB_PRODUCT_ID)) < 0 ) {
+    perror("can't find PowerUSB device\n");
     goto out;
-
   } else {
     Dprintf("device opened\n");
   }
