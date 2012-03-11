@@ -24,12 +24,19 @@
 #define Dprintf(fmt, ...) while(0){}
 #endif
 
+libusb_context *ctx = NULL;
+libusb_device *dev;
+libusb_device **devs;
+struct libusb_device_handle *devh = NULL;
 
-void send_cmd(struct libusb_device_handle *devh,int cmd)
+
+uint8_t* send_cmd(struct libusb_device_handle *devh,int cmd)
 {
   int i;
-  uint8_t buf[64];
+  uint8_t buf[64],ret[2];
+
   int size=0;
+
   Dprintf("send_cmd:%x\n",cmd);
 
   memset(buf, 0xff, sizeof(buf));
@@ -50,23 +57,23 @@ void send_cmd(struct libusb_device_handle *devh,int cmd)
 
   Dprintf("send_cmd:read:");
   for(i=0;i<2;i++){
+    ret[i] = buf[i];
     Dprintf("%02x",buf[i]);
   }
   Dprintf("\n");
-
+  
+  return ret;
 }
 
+void finalize(void){
+  libusb_close(devh);
+  libusb_exit(ctx);
+}
 
-int main(int argc, char **argv)
-{
-  libusb_context *ctx = NULL;
-  libusb_device *dev;
-  libusb_device **devs;
-  struct libusb_device_handle *devh = NULL;
+int initialize(void){
   int r=1;
   int i=0;
   int cnt=0;
-
   /* libusb initialize*/
   if ((r = libusb_init(&ctx)) < 0) {
     perror("libusb_init\n");
@@ -76,8 +83,8 @@ int main(int argc, char **argv)
     Dprintf("init done\n");
   }  
   
-  /* confirm powerusb device*/
-  /* list up all usb devices*/
+  /* confirm powerusb device */
+  /* list up all usb devices */
   if((libusb_get_device_list(ctx,&devs)) < 0) {
     perror("no usb device found");
     exit(1);
@@ -89,7 +96,7 @@ int main(int argc, char **argv)
       perror("failed to get device descriptor\n");
       return 1;
     }
-    /* count how many PowerUSB device connect*/
+    /* count how many PowerUSB device connected */
     if (desc.idVendor == USB_VENDOR_ID &&
 	desc.idProduct == USB_PRODUCT_ID) {
       cnt++;
@@ -113,7 +120,8 @@ int main(int argc, char **argv)
   if ((devh = libusb_open_device_with_vid_pid(ctx,USB_VENDOR_ID,
 					      USB_PRODUCT_ID)) < 0 ) {
     perror("can't find PowerUSB device\n");
-    goto out;
+    finalize();
+    exit(1);
   } else {
     Dprintf("PowerUSB device opened\n");
   }
@@ -129,7 +137,13 @@ int main(int argc, char **argv)
       exit(1);
     }
   }
+  return 0;
+}
 
+int main(int argc, char **argv)
+{
+  
+  initialize();
   send_cmd(devh,CMD_GET_MODEL);
   send_cmd(devh,CMD_GET_FIRM_VER);
   send_cmd(devh,CMD_GET_STATE1);
@@ -148,10 +162,8 @@ int main(int argc, char **argv)
   send_cmd(devh,0xb1);
   send_cmd(devh,0xb2);
 #endif 
+  finalize();
 
 
- out:
-  libusb_close(devh);
-  libusb_exit(ctx);
   exit(0);
 }
