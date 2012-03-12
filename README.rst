@@ -24,17 +24,9 @@ debian/sid on x86_64 とlibusb-1.0.9~rc3-3 で動作確認しています。
 
  $ make 
  $ sudo ./powerusb
- init done
- device opened
- send_cmd:aa
- send_cmd:read:0101
- send_cmd:a7
- send_cmd:read:0201
- send_cmd:a1
- send_cmd:read:0001
- send_cmd:a2
- send_cmd:read:0001
- send_cmd:ac 
- send_cmd:read:0101
-
+ Model:Basic
+ firmware version: 2.1
+ Outlet1:off
+ Outlet2:off
+ Outlet3:on
 

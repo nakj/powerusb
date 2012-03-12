@@ -16,7 +16,7 @@
 #define CMD_GET_STATE2 0xa2
 #define CMD_GET_STATE3 0xac
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define Dprintf printf
@@ -143,12 +143,49 @@ int initialize(void){
 int main(int argc, char **argv)
 {
   uint8_t ret[2];
+  int state[4];
+  int i;
+  
   initialize();
   send_cmd(devh,CMD_GET_MODEL,ret);
+  printf("Model:");
+  switch (ret[0]){
+  case 1:
+    printf("Basic\n");
+    break;
+  case 2:
+    printf("digIO\n");
+    break;
+  case 3:
+    printf("watchdog\n");
+    break;
+  case 4:
+    printf("smart\n");
+    break;
+  }
+
   send_cmd(devh,CMD_GET_FIRM_VER,ret);
+  printf("firmware version: %d.%d\n",ret[0],ret[1]);
+
   send_cmd(devh,CMD_GET_STATE1,ret);
+  state[1] = ret[0];
   send_cmd(devh,CMD_GET_STATE2,ret);
+  state[2] = ret[0];
   send_cmd(devh,CMD_GET_STATE3,ret);
+  state[3] = ret[0];
+
+  for (i=1;i<4;i++){
+    printf("Outlet%d:",i);
+    switch(state[i]){
+    case 0:
+      printf("off\n");
+      break;
+    case 1:
+      printf("on\n");
+      break;
+    }
+
+  }  
 
 #if 0
   send_cmd(devh,0x42);
