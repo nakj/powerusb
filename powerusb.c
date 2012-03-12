@@ -30,10 +30,10 @@ libusb_device **devs;
 struct libusb_device_handle *devh = NULL;
 
 
-uint8_t* send_cmd(struct libusb_device_handle *devh,int cmd)
+int send_cmd(struct libusb_device_handle *devh,int cmd, uint8_t ret[2])
 {
   int i;
-  uint8_t buf[64],ret[2];
+  uint8_t buf[64];
 
   int size=0;
 
@@ -62,7 +62,7 @@ uint8_t* send_cmd(struct libusb_device_handle *devh,int cmd)
   }
   Dprintf("\n");
   
-  return ret;
+  return 0;
 }
 
 void finalize(void){
@@ -142,13 +142,13 @@ int initialize(void){
 
 int main(int argc, char **argv)
 {
-  
+  uint8_t ret[2];
   initialize();
-  send_cmd(devh,CMD_GET_MODEL);
-  send_cmd(devh,CMD_GET_FIRM_VER);
-  send_cmd(devh,CMD_GET_STATE1);
-  send_cmd(devh,CMD_GET_STATE2);
-  send_cmd(devh,CMD_GET_STATE3);
+  send_cmd(devh,CMD_GET_MODEL,ret);
+  send_cmd(devh,CMD_GET_FIRM_VER,ret);
+  send_cmd(devh,CMD_GET_STATE1,ret);
+  send_cmd(devh,CMD_GET_STATE2,ret);
+  send_cmd(devh,CMD_GET_STATE3,ret);
 
 #if 0
   send_cmd(devh,0x42);
