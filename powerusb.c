@@ -187,11 +187,13 @@ int get_status(int a)
 void get_power(int psec)
 {
   uint8_t ret[2];
+  char buf[5],*e;
 
   while (psec > 0){
     ret[0]=ret[1]=0;
     send_cmd(devh,CMD_GET_POWER,ret);
-    printf("Current %dmA\n",ret[0] << 8| ret[1]);
+    sprintf(buf,"0x%02x%02x",ret[0],ret[1]);
+    printf("Current %ldmA\n",strtol(buf,&e,16));
     send_cmd(devh,CMD_PING,ret);
     sleep(1);
     psec--;
