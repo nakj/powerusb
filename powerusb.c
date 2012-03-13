@@ -28,6 +28,19 @@ libusb_context *ctx = NULL;
 libusb_device *dev;
 libusb_device **devs;
 struct libusb_device_handle *devh = NULL;
+int state[4];
+
+void usage(void)
+{
+  const char usage_string[] = 
+    "command usage\n"
+    "\tpowerusb get power [sec]\n"
+    "\tpowerusb get state [1-3]\n"
+    "\tpowerusb set [1-3] [on|off]\n";
+
+  printf("%s",usage_string);
+  exit(1);
+}
 
 
 int send_cmd(struct libusb_device_handle *devh,int cmd, uint8_t ret[2])
@@ -140,12 +153,73 @@ int initialize(void){
   return 0;
 }
 
+int get_status(int a)
+{
+  uint8_t ret[2];
+
+  if (( a < 0) | (a > 3))
+    usage();
+
+  switch(a){
+  case 1:
+    send_cmd(devh,CMD_GET_STATE1,ret);
+    break;
+  case 2:
+    send_cmd(devh,CMD_GET_STATE2,ret);
+    break;
+  case 3:
+    send_cmd(devh,CMD_GET_STATE3,ret);
+    break;
+  default:
+    usage();
+  }
+  printf("Outlet%d status:",a);
+  if (ret[0] == 0){
+    printf("OFF\n");
+  }else {
+    printf("ON\n");
+  }
+
+
+
+  return 0;
+}
+
+
+
+int cmd_get(int argc,char **argv)
+{
+  if (argc < 4) 
+    usage();
+
+  if (!strcmp(argv[2],"power")) {
+    printf("power\n");
+  } else if (!strcmp(argv[2],"state")){
+    if (!(!strcmp(argv[3],"1") | !strcmp(argv[3],"2") | !strcmp(argv[3],"3" )))
+      usage();
+
+    get_status(atoi(argv[3]));
+
+  }else{
+    usage();
+  }
+
+  return 0;
+}
+int cmd_set(int argc,char **argv)
+{
+
+
+  return 0;
+}
+
+
+
 int main(int argc, char **argv)
 {
   uint8_t ret[2];
-  int state[4];
   int i;
-  
+ 
   initialize();
   send_cmd(devh,CMD_GET_MODEL,ret);
   printf("Model:");
@@ -163,14 +237,15 @@ int main(int argc, char **argv)
     printf("smart\n");
     break;
   }
-
   send_cmd(devh,CMD_GET_FIRM_VER,ret);
   printf("firmware version: %d.%d\n",ret[0],ret[1]);
 
   send_cmd(devh,CMD_GET_STATE1,ret);
   state[1] = ret[0];
+
   send_cmd(devh,CMD_GET_STATE2,ret);
   state[2] = ret[0];
+
   send_cmd(devh,CMD_GET_STATE3,ret);
   state[3] = ret[0];
 
@@ -187,20 +262,21 @@ int main(int argc, char **argv)
 
   }  
 
-#if 0
-  send_cmd(devh,0x42);
-  send_cmd(devh,0x44);
-  send_cmd(devh,0x45);
+  if (argc < 2) {
+    usage();
+    exit(1);
+  }
+  if (!strcmp(argv[1],"get")) {
+      cmd_get(argc,argv);
+  }else if (!strcmp(argv[1],"set")) {
+      printf("set\n");
+      cmd_set(argc,argv);
+  }else {
+    usage();
+    exit(1);
+  }
 
-  send_cmd(devh,0x42);
-  send_cmd(devh,0x44);
-  send_cmd(devh,0x45);
 
-  send_cmd(devh,0xb1);
-  send_cmd(devh,0xb2);
-#endif 
   finalize();
-
-
   exit(0);
 }
