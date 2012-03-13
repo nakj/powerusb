@@ -219,11 +219,16 @@ void cmd_get(int argc,char **argv)
 
     
   } else if (!strcmp(argv[2],"state")){
-    if (!(!strcmp(argv[3],"1") | !strcmp(argv[3],"2") | !strcmp(argv[3],"3" )))
+    if (!strcmp(argv[3],"all")) {
+      get_status(1);
+      get_status(2);
+      get_status(3);
+
+    }else if (!(!strcmp(argv[3],"1") | !strcmp(argv[3],"2") | !strcmp(argv[3],"3" ))){
       usage();
-
-    get_status(atoi(argv[3]));
-
+    }else {
+      get_status(atoi(argv[3]));
+    }
   }else{
     usage();
   }
