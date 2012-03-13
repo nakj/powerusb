@@ -15,6 +15,9 @@
 #define CMD_GET_STATE1 0xa1
 #define CMD_GET_STATE2 0xa2
 #define CMD_GET_STATE3 0xac
+#define CMD_GET_POWER 0xb1
+#define CMD_PING      0xb2
+
 
 //#define DEBUG
 
@@ -179,21 +182,40 @@ int get_status(int a)
   }else {
     printf("ON\n");
   }
-
-
-
   return 0;
 }
-
-
-
-int cmd_get(int argc,char **argv)
+void get_power(int psec)
 {
-  if (argc < 4) 
+  uint8_t ret[2];
+
+  while (psec > 0){
+    ret[0]=ret[1]=0;
+    send_cmd(devh,CMD_GET_POWER,ret);
+    printf("Current %dmA\n",ret[0] << 8| ret[1]);
+    send_cmd(devh,CMD_PING,ret);
+    sleep(1);
+    psec--;
+  }
+
+}
+
+void cmd_get(int argc,char **argv)
+{
+  int psec;
+
+  if (argc < 3) 
     usage();
 
   if (!strcmp(argv[2],"power")) {
     printf("power\n");
+    if (argc  < 4 ) {
+      psec =10;
+    } else {
+      psec = atoi(argv[3]);
+    }
+    get_power(psec);
+
+    
   } else if (!strcmp(argv[2],"state")){
     if (!(!strcmp(argv[3],"1") | !strcmp(argv[3],"2") | !strcmp(argv[3],"3" )))
       usage();
@@ -203,14 +225,14 @@ int cmd_get(int argc,char **argv)
   }else{
     usage();
   }
-
-  return 0;
 }
-int cmd_set(int argc,char **argv)
+
+
+void cmd_set(int argc,char **argv)
 {
 
 
-  return 0;
+
 }
 
 
