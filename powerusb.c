@@ -219,6 +219,9 @@ void cmd_get(int argc,char **argv)
 
     
   } else if (!strcmp(argv[2],"state")){
+    if (argc < 4)
+      usage();
+
     if (!strcmp(argv[3],"all")) {
       get_status(1);
       get_status(2);
