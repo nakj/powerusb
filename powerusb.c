@@ -193,6 +193,7 @@ void get_power(int psec)
     ret[0]=ret[1]=0;
     send_cmd(devh,CMD_GET_POWER,ret);
     sprintf(buf,"0x%02x%02x",ret[0],ret[1]);
+    Dprintf("ret:%s\n",buf);
     printf("Current %ldmA\n",strtol(buf,&e,16));
     send_cmd(devh,CMD_PING,ret);
     sleep(1);
@@ -209,7 +210,7 @@ void cmd_get(int argc,char **argv)
     usage();
 
   if (!strcmp(argv[2],"power")) {
-    printf("power\n");
+    Dprintf("power\n");
     if (argc  < 4 ) {
       psec =10;
     } else {
@@ -219,6 +220,7 @@ void cmd_get(int argc,char **argv)
 
     
   } else if (!strcmp(argv[2],"state")){
+    Dprintf("state");
     if (argc < 4)
       usage();
 
@@ -301,7 +303,7 @@ int main(int argc, char **argv)
   if (!strcmp(argv[1],"get")) {
       cmd_get(argc,argv);
   }else if (!strcmp(argv[1],"set")) {
-      printf("set\n");
+      Dprintf("set\n");
       cmd_set(argc,argv);
   }else {
     usage();
