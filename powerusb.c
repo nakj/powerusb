@@ -272,7 +272,7 @@ int main(int argc, char **argv)
     break;
   }
   send_cmd(devh,CMD_GET_FIRM_VER,ret);
-  printf("firmware version: %d.%d\n",ret[0],ret[1]);
+  printf("Firmware version: %d.%d\n",ret[0],ret[1]);
 
   send_cmd(devh,CMD_GET_STATE1,ret);
   state[1] = ret[0];
