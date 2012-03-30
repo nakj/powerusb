@@ -69,13 +69,15 @@ int send_cmd(struct libusb_device_handle *devh,int cmd, uint8_t ret[2])
     exit(1);
   }
   memset(buf, 0x00, sizeof(buf));
-  /* packet recieve */
-  if((libusb_interrupt_transfer(devh,ENDPOINT_IN,buf, 
-				sizeof(buf),&size, 1000)) < 0 ) {
-    perror("libusb_interrupt_transfer");
-    exit(1);
+  /* packet recieve if needed */
+  if (cmd > 0x50) {
+    Dprintf("recieve\n");
+    if((libusb_interrupt_transfer(devh,ENDPOINT_IN,buf, 
+				  sizeof(buf),&size, 1000)) < 0 ) {
+      perror("libusb_interrupt_transfer");
+      exit(1);
+    }
   }
-
   Dprintf("send_cmd:read:");
   for(i=0;i<2;i++){
     ret[i] = buf[i];
