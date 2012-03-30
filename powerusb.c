@@ -5,19 +5,24 @@
 #include <unistd.h>
 #include <string.h>
 
-#define USB_VENDOR_ID 0x04d8
-#define USB_PRODUCT_ID 0x003f
-#define ENDPOINT_IN 0x81
-#define ENDPOINT_OUT 0x01
+#define USB_VENDOR_ID	0x04d8
+#define USB_PRODUCT_ID	0x003f
+#define ENDPOINT_IN	0x81
+#define ENDPOINT_OUT	0x01
 
-#define CMD_GET_MODEL 0xaa
-#define CMD_GET_FIRM_VER 0xa7
-#define CMD_GET_STATE1 0xa1
-#define CMD_GET_STATE2 0xa2
-#define CMD_GET_STATE3 0xac
-#define CMD_GET_POWER 0xb1
-#define CMD_PING      0xb2
-
+#define CMD_GET_MODEL		0xaa
+#define CMD_GET_FIRM_VER	0xa7
+#define CMD_GET_STATE1		0xa1
+#define CMD_GET_STATE2		0xa2
+#define CMD_GET_STATE3		0xac
+#define CMD_GET_POWER		0xb1
+#define CMD_PING		0xb2
+#define CMD_OUTLET1_ON		0x41
+#define CMD_OUTLET1_OFF		0x41
+#define CMD_OUTLET2_ON		0x43
+#define CMD_OUTLET2_OFF		0x44
+#define CMD_OUTLET3_ON		0x45
+#define CMD_OUTLET3_OFF		0x50
 
 //#define DEBUG
 
@@ -184,6 +189,7 @@ int get_status(int a)
   }
   return 0;
 }
+
 void get_power(int psec)
 {
   uint8_t ret[2];
@@ -239,11 +245,67 @@ void cmd_get(int argc,char **argv)
   }
 }
 
+void cmd_set2(int s, char* cmd)
+{
+  uint8_t ret[2];
+  int cond;
+  printf("to swich condition Outlet%d:%s\n",s, cmd);
+
+  if (!strcmp(cmd,"on")) {
+    cond = 1;
+  }else if (!strcmp(cmd,"off")) {
+    cond = 0;
+  }
+
+  switch(s){
+  case 1:
+    if (cond == 0){
+      send_cmd(devh,CMD_OUTLET1_OFF,ret);
+    }else if (cond == 1) {
+      send_cmd(devh,CMD_OUTLET1_ON,ret);
+    }
+    break;
+  case 2:
+    if (cond == 0){
+      send_cmd(devh,CMD_OUTLET2_OFF,ret);
+    }else if (cond == 1) {
+      send_cmd(devh,CMD_OUTLET2_ON,ret);
+    }
+    break;
+  case 3:
+    if (cond == 0){
+      send_cmd(devh,CMD_OUTLET3_OFF,ret);
+    }else if (cond == 1) {
+      send_cmd(devh,CMD_OUTLET3_ON,ret);
+    }
+
+    break;
+  default:
+    usage();
+    exit(1);
+    
+  }
+
+
+}
 
 void cmd_set(int argc,char **argv)
 {
+  int s;
+  if (argc < 4)
+    usage();
 
+  s = atoi(argv[2]);
+  if ((s ==1) | (s ==2) | (s ==3)) {
+    /* set routine */
+    if (!strcmp(argv[3],"on")|!strcmp(argv[3],"off"))
+      cmd_set2(s,argv[3]);
+    else
+      usage();
 
+  } else {
+    usage();
+  }
 
 }
 
