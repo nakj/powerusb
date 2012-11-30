@@ -18,7 +18,7 @@
 #define CMD_GET_POWER		0xb1
 #define CMD_PING		0xb2
 #define CMD_OUTLET1_ON		0x41
-#define CMD_OUTLET1_OFF		0x41
+#define CMD_OUTLET1_OFF		0x42
 #define CMD_OUTLET2_ON		0x43
 #define CMD_OUTLET2_OFF		0x44
 #define CMD_OUTLET3_ON		0x45
